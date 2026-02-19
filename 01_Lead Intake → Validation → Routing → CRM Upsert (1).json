@@ -1,0 +1,891 @@
+{
+  "name": "01_Lead Intake → Validation → Routing → CRM Upsert",
+  "nodes": [
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Webhook').item.json.body.interest }}",
+                    "rightValue": "AI Automation",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "1636d4e0-5139-4d55-a2af-bc2395241561"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "AI Automation"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c5d2b9eb-176b-493d-bafd-547d8814fe58",
+                    "leftValue": "={{ $('Webhook').item.json.body.interest }}",
+                    "rightValue": "Web Development",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Web Development"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        64,
+        -256
+      ],
+      "id": "295be2e9-20a3-49c0-972f-7391048f45bc",
+      "name": "Route Lead"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3ba12a07-df08-469e-b0c2-07ffaaf669a9",
+              "leftValue": "={{ $json.body.email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "839a4afc-c2fd-4869-b192-a0889111d8dc",
+              "leftValue": "={{$json.body.email.match(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/)}}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "90208502-5a55-406c-8c2f-b3be77dd4adf",
+              "leftValue": "={{ $json.body.phone }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -208,
+        -64
+      ],
+      "id": "20c966ef-5954-40a7-8dd3-9205a9f9e9c8",
+      "name": "Validate Lead"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "65cb2ed7-9b60-4cd7-8f66-4b37dada4766",
+              "leftValue": "={{ !!$json.row_number }}\n\n\n",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1056,
+        -256
+      ],
+      "id": "cb788192-f419-45f6-872b-848faa08ff36",
+      "name": "Lead Exists?"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "18bB__3Bif13pD8qV_mXGKzqbVek7P-ujsV95U7aPg6g",
+          "mode": "list",
+          "cachedResultName": "Lead sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18bB__3Bif13pD8qV_mXGKzqbVek7P-ujsV95U7aPg6g/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18bB__3Bif13pD8qV_mXGKzqbVek7P-ujsV95U7aPg6g/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{$json.rowNumber}}",
+            "name": "={{$json.name}}",
+            "phone": "={{$json.phone}}",
+            "interest": "={{$json.interest}}",
+            "source": "={{$json.source}}",
+            "status": "updated",
+            "updated_at": "={{$now}}",
+            "priority": "={{$json.priority}}",
+            "owner": "={{$json.owner}}",
+            "tag": "={{$json.tag}}",
+            "pipeline": "={{$json.pipeline}}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "interest",
+              "displayName": "interest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "owner",
+              "displayName": "owner",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tag",
+              "displayName": "tag",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "pipeline",
+              "displayName": "pipeline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1296,
+        -384
+      ],
+      "id": "88947195-6ef5-4e42-991c-e50392a7b7eb",
+      "name": "Update Lead",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "R2jPkj2gSlXi8lLl",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "18bB__3Bif13pD8qV_mXGKzqbVek7P-ujsV95U7aPg6g",
+          "mode": "list",
+          "cachedResultName": "Lead sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18bB__3Bif13pD8qV_mXGKzqbVek7P-ujsV95U7aPg6g/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18bB__3Bif13pD8qV_mXGKzqbVek7P-ujsV95U7aPg6g/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "email": "={{$('Webhook').item.json.body.email}}",
+            "name": "={{$('Webhook').item.json.body.name}}",
+            "phone": "={{$('Webhook').item.json.body.phone}}",
+            "interest": "={{ $('Webhook').item.json.body.interest}}",
+            "source": "={{ $('Webhook').item.json.body.source }}",
+            "status": "new",
+            "created_at": "={{$now}}",
+            "updated_at": "={{$now}}",
+            "pipeline": "={{ $('Merge').item.json.pipeline }}",
+            "tag": "={{ $('Merge').item.json.tag }}",
+            "owner": "={{ $('Merge').item.json.owner }}",
+            "priority": "={{ $('Merge').item.json.priority }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "interest",
+              "displayName": "interest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "owner",
+              "displayName": "owner",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tag",
+              "displayName": "tag",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "pipeline",
+              "displayName": "pipeline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1312,
+        -160
+      ],
+      "id": "f1bc8426-9d31-4a17-9ca8-ab6840eed343",
+      "name": "Create Lead",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "R2jPkj2gSlXi8lLl",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1552,
+        -256
+      ],
+      "id": "5aa5b42f-9122-4b19-9cbd-cfdc35b94589",
+      "name": "Respond to Webhook",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "18bB__3Bif13pD8qV_mXGKzqbVek7P-ujsV95U7aPg6g",
+          "mode": "list",
+          "cachedResultName": "Lead sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18bB__3Bif13pD8qV_mXGKzqbVek7P-ujsV95U7aPg6g/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18bB__3Bif13pD8qV_mXGKzqbVek7P-ujsV95U7aPg6g/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "email",
+              "lookupValue": "={{ $('Webhook').item.json.body.email }}"
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": false
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        848,
+        -256
+      ],
+      "id": "ef703ccc-f38b-4a85-b3a4-e4a247615982",
+      "name": "Find Lead by Email",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "R2jPkj2gSlXi8lLl",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1dba450b-1ff6-4137-93c0-a6dbe5cdb0dd",
+              "name": "priority",
+              "value": "high",
+              "type": "string"
+            },
+            {
+              "id": "a37746de-3e0a-4006-ae17-cd883cca1b3c",
+              "name": "owner",
+              "value": "AI Sales Team",
+              "type": "string"
+            },
+            {
+              "id": "216b7c3c-0d8c-4ece-9e87-8fc78629db05",
+              "name": "tag",
+              "value": "ai_automation",
+              "type": "string"
+            },
+            {
+              "id": "3409de90-120b-4a26-9bac-9b7e62471480",
+              "name": "pipeline",
+              "value": "ai_pipeline",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        304,
+        -400
+      ],
+      "id": "df2d50bc-1ae7-4789-a22a-1251d1c55846",
+      "name": "Set – AI Automation"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1dba450b-1ff6-4137-93c0-a6dbe5cdb0dd",
+              "name": "priority",
+              "value": "medium",
+              "type": "string"
+            },
+            {
+              "id": "a37746de-3e0a-4006-ae17-cd883cca1b3c",
+              "name": "owner",
+              "value": "Web Sales Team",
+              "type": "string"
+            },
+            {
+              "id": "216b7c3c-0d8c-4ece-9e87-8fc78629db05",
+              "name": "tag",
+              "value": "web_dev",
+              "type": "string"
+            },
+            {
+              "id": "3409de90-120b-4a26-9bac-9b7e62471480",
+              "name": "pipeline",
+              "value": "web_pipeline",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        304,
+        -240
+      ],
+      "id": "5c6aecbd-ddea-47b0-aa83-8585b8086416",
+      "name": "Set – Web Development"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1dba450b-1ff6-4137-93c0-a6dbe5cdb0dd",
+              "name": "priority",
+              "value": "low",
+              "type": "string"
+            },
+            {
+              "id": "a37746de-3e0a-4006-ae17-cd883cca1b3c",
+              "name": "owner",
+              "value": "General",
+              "type": "string"
+            },
+            {
+              "id": "216b7c3c-0d8c-4ece-9e87-8fc78629db05",
+              "name": "tag",
+              "value": "general",
+              "type": "string"
+            },
+            {
+              "id": "3409de90-120b-4a26-9bac-9b7e62471480",
+              "name": "pipeline",
+              "value": "general_pipeline",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        320,
+        -64
+      ],
+      "id": "ff2e0421-6fe9-4c48-aa40-d2ec033cadd6",
+      "name": "Set – Others"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        608,
+        -272
+      ],
+      "id": "a6065ae5-0e33-4eb0-acac-4fb1c18f545d",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead-intake",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -416,
+        -64
+      ],
+      "id": "dd5a34c7-ebbe-41ea-b467-4576edd74d13",
+      "name": "Webhook",
+      "webhookId": "ffdc0529-2456-461e-b5cf-1d6623700c37"
+    }
+  ],
+  "pinData": {
+    "Respond to Webhook": [
+      {
+        "json": {
+          "status": "success",
+          "message": "Lead processed successfully"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Validate Lead": {
+      "main": [
+        [
+          {
+            "node": "Route Lead",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Route Lead": {
+      "main": [
+        [
+          {
+            "node": "Set – AI Automation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set – Web Development",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set – Others",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead Exists?": {
+      "main": [
+        [
+          {
+            "node": "Update Lead",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Lead": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Lead": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Lead by Email": {
+      "main": [
+        [
+          {
+            "node": "Lead Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set – AI Automation": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set – Web Development": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Set – Others": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Find Lead by Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "e11a2930-4ee9-4dda-9df4-c7c8728610d5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9152717d6a868ded22298fc043191f2973173f9f10a0511281842998517e2b0f"
+  },
+  "id": "IofZYjM_B4X3QKXqZG9Ts",
+  "tags": []
+}

@@ -1,0 +1,178 @@
+{
+  "name": "03_Qdrant_Upsert",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "9787831d-11a3-47fc-8553-b224ee449bb5",
+      "name": "When Clicking \"Execute\"",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "text",
+              "type": "string",
+              "value": "=COMPANY PROFILE: Speedocode Systems\nSpeedocode Systems is a premier AI automation agency specializing in streamlining business workflows using n8n and Python.\n\nOUR SERVICES:\n1. Custom AI Agents: Tailored LLM agents for customer support and sales.\n2. Workflow Automation: Connecting CRM, Email, and Database tools to eliminate manual data entry.\n3. Vector Database Setup: Implementing Qdrant for enterprise-level document retrieval.\n\nPRICING PACKAGES:\n- Starter Automator: 10000/month (Includes 6 custom workflows).\n- Business Scale: 18000/month (Includes 10 workflows and 24/7 monitoring).\n- Enterprise: Custom pricing for high-volume processing.\n\nOPERATING HOURS:\nMonday to Friday: 10:00 - 21:00 (IST).\nSaturday: 10:00 - 14:00 (Emergency support only).\nSunday: Closed.\n\nCONTACT INFO:\nEmail: speedocode.systems@gmail.com\nPhone: +39 02 123 4567\nAddress: Via Roma 10, Milan, Italy.\n\nREFUND POLICY: \nWe offer a 14-day satisfaction guarantee on all custom automation deployments."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "94bf8fb5-ad3d-4aff-8428-0aebf0140559",
+      "name": "Set Demo Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "company_knowledge",
+          "mode": "list"
+        },
+        "options": {}
+      },
+      "id": "da4275dc-5b58-466a-9443-6694c085ca54",
+      "name": "Qdrant Upsert",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1,
+      "position": [
+        448,
+        0
+      ],
+      "credentials": {
+        "qdrantApi": {
+          "id": "CEvHGgBGTYHebJ1h",
+          "name": "QdrantApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "84607b5e-275c-4d0e-8684-e2e269a6f102",
+      "name": "Embeddings OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        352,
+        224
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "5fAQpBuElEg8gh08",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "166a15e3-a724-4ff0-a51f-9053671a3b8b",
+      "name": "Default Data Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        560,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        656,
+        368
+      ],
+      "id": "d380f302-76e9-4e3b-b2c3-53ba2a785136",
+      "name": "Recursive Character Text Splitter"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Clicking \"Execute\"": {
+      "main": [
+        [
+          {
+            "node": "Set Demo Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Upsert",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Qdrant Upsert",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Demo Data": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Upsert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "a555b278-bc4a-4826-85ac-f4dbe760bd86",
+  "meta": {
+    "instanceId": "9152717d6a868ded22298fc043191f2973173f9f10a0511281842998517e2b0f"
+  },
+  "id": "V_LLY230sVyKjyg2KXNRz",
+  "tags": []
+}

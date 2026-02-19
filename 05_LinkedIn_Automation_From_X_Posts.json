@@ -1,0 +1,604 @@
+{
+    "name": "05_LinkedIn_Automation_From_X_Posts",
+    "nodes": [
+        {
+            "parameters": {
+                "rule": {
+                    "interval": [
+                        {
+                            "field": "hours",
+                            "hoursInterval": 1
+                        }
+                    ]
+                }
+            },
+            "type": "n8n-nodes-base.scheduleTrigger",
+            "typeVersion": 1.2,
+            "position": [
+                -1200,
+                300
+            ],
+            "id": "a1b2c3d4-0001-4000-8000-000000000001",
+            "name": "Every Hour"
+        },
+        {
+            "parameters": {
+                "resource": "tweet",
+                "search": "(automation OR n8n OR \"workflow automation\" OR \"no code\" OR \"low code\" OR \"ai automation\") -is:retweet -is:reply lang:en",
+                "limit": 10,
+                "additionalFields": {
+                    "tweetFieldsObject": [
+                        "created_at",
+                        "public_metrics",
+                        "author_id"
+                    ]
+                }
+            },
+            "type": "n8n-nodes-base.twitter",
+            "typeVersion": 2,
+            "position": [
+                -960,
+                300
+            ],
+            "id": "a1b2c3d4-0001-4000-8000-000000000002",
+            "name": "Search Automation Tweets",
+            "credentials": {
+                "twitterOAuth2Api": {
+                    "id": "TWITTER_CREDENTIAL_ID",
+                    "name": "X (Twitter) account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "s0001-0001-4000-8000-000000000001",
+                            "name": "tweet_id",
+                            "value": "={{ $json.id }}",
+                            "type": "string"
+                        },
+                        {
+                            "id": "s0001-0001-4000-8000-000000000002",
+                            "name": "text",
+                            "value": "={{ $json.text }}",
+                            "type": "string"
+                        },
+                        {
+                            "id": "s0001-0001-4000-8000-000000000003",
+                            "name": "created_at",
+                            "value": "={{ $json.created_at }}",
+                            "type": "string"
+                        },
+                        {
+                            "id": "s0001-0001-4000-8000-000000000004",
+                            "name": "author_name",
+                            "value": "={{ $json.user?.name || $json.author?.name || 'Unknown' }}",
+                            "type": "string"
+                        },
+                        {
+                            "id": "s0001-0001-4000-8000-000000000005",
+                            "name": "author_username",
+                            "value": "={{ $json.user?.username || $json.author?.username || 'unknown' }}",
+                            "type": "string"
+                        },
+                        {
+                            "id": "s0001-0001-4000-8000-000000000006",
+                            "name": "likes",
+                            "value": "={{ $json.public_metrics?.like_count || 0 }}",
+                            "type": "number"
+                        },
+                        {
+                            "id": "s0001-0001-4000-8000-000000000007",
+                            "name": "retweets",
+                            "value": "={{ $json.public_metrics?.retweet_count || 0 }}",
+                            "type": "number"
+                        },
+                        {
+                            "id": "s0001-0001-4000-8000-000000000008",
+                            "name": "tweet_url",
+                            "value": "=https://x.com/{{ $json.user?.username || $json.author?.username || 'i' }}/status/{{ $json.id }}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                -720,
+                300
+            ],
+            "id": "a1b2c3d4-0001-4000-8000-000000000003",
+            "name": "Set Tweet Fields"
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "options": {
+                        "caseSensitive": false,
+                        "leftValue": "",
+                        "typeValidation": "strict",
+                        "version": 2
+                    },
+                    "conditions": [
+                        {
+                            "id": "f1001001-0001-4000-8000-000000000001",
+                            "leftValue": "={{ $json.text.length }}",
+                            "rightValue": "50",
+                            "operator": {
+                                "type": "number",
+                                "operation": "gte"
+                            }
+                        }
+                    ],
+                    "combinator": "and"
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.filter",
+            "typeVersion": 2.2,
+            "position": [
+                -480,
+                300
+            ],
+            "id": "a1b2c3d4-0001-4000-8000-000000000004",
+            "name": "Filter Short Tweets"
+        },
+        {
+            "parameters": {
+                "promptType": "define",
+                "text": "=Repurpose the following tweet into a LinkedIn post.\n\nTWEET:\n{{ $json.text }}\n\nAUTHOR: @{{ $json.author_username }}\nENGAGEMENT: {{ $json.likes }} likes, {{ $json.retweets }} retweets\n\nRules:\n1. Write a professional, value-driven LinkedIn post (150-300 words)\n2. Start with a bold hook line to grab attention\n3. Expand on the tweet's core idea with your own insights\n4. Use short paragraphs and line breaks for readability\n5. Add 2-3 relevant bullet points if appropriate\n6. End with a call-to-action question to drive engagement\n7. Add 3-5 relevant hashtags at the end (e.g. #Automation #n8n #AI #NoCode #Productivity)\n8. Do NOT copy the tweet word-for-word; add original perspective\n9. Credit the original author naturally within the post (e.g. \"Inspired by @username's take on...\")\n10. Maintain a professional yet conversational tone",
+                "hasOutputParser": true,
+                "options": {
+                    "systemMessage": "You are a LinkedIn content strategist who specializes in technology, automation, and AI topics. You repurpose trending tweets into high-engagement LinkedIn posts. Your posts are insightful, professional, and always provide value to the reader. You write in a conversational yet authoritative tone. Never use emojis excessively — at most 2-3 per post."
+                }
+            },
+            "type": "@n8n/n8n-nodes-langchain.agent",
+            "typeVersion": 1.7,
+            "position": [
+                -240,
+                300
+            ],
+            "id": "a1b2c3d4-0001-4000-8000-000000000005",
+            "name": "AI – Repurpose for LinkedIn"
+        },
+        {
+            "parameters": {
+                "model": {
+                    "__rl": true,
+                    "mode": "list",
+                    "value": "gpt-4o-mini",
+                    "cachedResultName": "gpt-4o-mini"
+                },
+                "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+            "typeVersion": 1.2,
+            "position": [
+                -240,
+                520
+            ],
+            "id": "a1b2c3d4-0001-4000-8000-000000000006",
+            "name": "OpenAI Chat Model",
+            "credentials": {
+                "openAiApi": {
+                    "id": "OPENAI_CREDENTIAL_ID",
+                    "name": "OpenAi account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsonSchemaExample": "{\n  \"linkedin_post\": \"Your compelling LinkedIn post text here...\"\n}"
+            },
+            "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+            "typeVersion": 1.2,
+            "position": [
+                -80,
+                520
+            ],
+            "id": "a1b2c3d4-0001-4000-8000-000000000007",
+            "name": "Structured Output Parser"
+        },
+        {
+            "parameters": {
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "s1001001-0001-4000-8000-000000000001",
+                            "name": "linkedin_text",
+                            "value": "={{ $json.output.linkedin_post }}",
+                            "type": "string"
+                        },
+                        {
+                            "id": "s1001001-0001-4000-8000-000000000002",
+                            "name": "original_tweet_url",
+                            "value": "={{ $('Set Tweet Fields').item.json.tweet_url }}",
+                            "type": "string"
+                        },
+                        {
+                            "id": "s1001001-0001-4000-8000-000000000003",
+                            "name": "tweet_id",
+                            "value": "={{ $('Set Tweet Fields').item.json.tweet_id }}",
+                            "type": "string"
+                        },
+                        {
+                            "id": "s1001001-0001-4000-8000-000000000004",
+                            "name": "author_username",
+                            "value": "={{ $('Set Tweet Fields').item.json.author_username }}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                0,
+                300
+            ],
+            "id": "a1b2c3d4-0001-4000-8000-000000000008",
+            "name": "Set LinkedIn Fields"
+        },
+        {
+            "parameters": {
+                "operation": "sendAndWait",
+                "sendTo": "nhithees@gmail.com",
+                "subject": "=[LinkedIn Draft] Inspired by @{{ $json.author_username }}",
+                "message": "=<h3>📝 LinkedIn Post Draft</h3>\n<p><strong>Original Tweet:</strong> <a href=\"{{ $json.original_tweet_url }}\">{{ $json.original_tweet_url }}</a></p>\n<hr>\n<pre style=\"white-space: pre-wrap; font-family: Arial, sans-serif;\">{{ $json.linkedin_text }}</pre>\n<hr>\n<p><em>Click <strong>Approve</strong> to publish this to LinkedIn, or <strong>Disapprove</strong> to discard.</em></p>",
+                "approvalOptions": {
+                    "values": {
+                        "approvalType": "double"
+                    }
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.gmail",
+            "typeVersion": 2.1,
+            "position": [
+                240,
+                300
+            ],
+            "id": "a1b2c3d4-0001-4000-8000-000000000009",
+            "name": "Send for Approval",
+            "webhookId": "li-approval-webhook-001",
+            "credentials": {
+                "gmailOAuth2": {
+                    "id": "GMAIL_CREDENTIAL_ID",
+                    "name": "Gmail account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "options": {
+                        "version": 2,
+                        "leftValue": "",
+                        "caseSensitive": true,
+                        "typeValidation": "strict"
+                    },
+                    "combinator": "and",
+                    "conditions": [
+                        {
+                            "id": "i1001001-0001-4000-8000-000000000001",
+                            "operator": {
+                                "type": "boolean",
+                                "operation": "true",
+                                "singleValue": true
+                            },
+                            "leftValue": "={{ $json.data.approved }}",
+                            "rightValue": "true"
+                        }
+                    ]
+                },
+                "options": {
+                    "ignoreCase": false
+                }
+            },
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2.2,
+            "position": [
+                480,
+                300
+            ],
+            "id": "a1b2c3d4-0001-4000-8000-000000000010",
+            "name": "Approved?"
+        },
+        {
+            "parameters": {
+                "person": "YOUR_LINKEDIN_PERSON_URN",
+                "text": "={{ $('Set LinkedIn Fields').item.json.linkedin_text }}",
+                "additionalFields": {}
+            },
+            "type": "n8n-nodes-base.linkedIn",
+            "typeVersion": 1,
+            "position": [
+                720,
+                200
+            ],
+            "id": "a1b2c3d4-0001-4000-8000-000000000011",
+            "name": "Post to LinkedIn",
+            "credentials": {
+                "linkedInOAuth2Api": {
+                    "id": "LINKEDIN_CREDENTIAL_ID",
+                    "name": "LinkedIn account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "operation": "append",
+                "documentId": {
+                    "__rl": true,
+                    "value": "YOUR_GOOGLE_SHEET_ID",
+                    "mode": "id"
+                },
+                "sheetName": {
+                    "__rl": true,
+                    "value": "gid=0",
+                    "mode": "list",
+                    "cachedResultName": "Sheet1"
+                },
+                "columns": {
+                    "mappingMode": "defineBelow",
+                    "value": {
+                        "tweet_id": "={{ $('Set LinkedIn Fields').item.json.tweet_id }}",
+                        "author": "={{ $('Set LinkedIn Fields').item.json.author_username }}",
+                        "original_tweet_url": "={{ $('Set LinkedIn Fields').item.json.original_tweet_url }}",
+                        "linkedin_post": "={{ $('Set LinkedIn Fields').item.json.linkedin_text }}",
+                        "status": "published",
+                        "posted_at": "={{ $now }}"
+                    },
+                    "matchingColumns": [],
+                    "schema": [
+                        {
+                            "id": "tweet_id",
+                            "displayName": "tweet_id",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true
+                        },
+                        {
+                            "id": "author",
+                            "displayName": "author",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true
+                        },
+                        {
+                            "id": "original_tweet_url",
+                            "displayName": "original_tweet_url",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true
+                        },
+                        {
+                            "id": "linkedin_post",
+                            "displayName": "linkedin_post",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true
+                        },
+                        {
+                            "id": "status",
+                            "displayName": "status",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true
+                        },
+                        {
+                            "id": "posted_at",
+                            "displayName": "posted_at",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true
+                        }
+                    ],
+                    "attemptToConvertTypes": false,
+                    "convertFieldsToString": false
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.googleSheets",
+            "typeVersion": 4.7,
+            "position": [
+                960,
+                200
+            ],
+            "id": "a1b2c3d4-0001-4000-8000-000000000012",
+            "name": "Log to Google Sheet",
+            "credentials": {
+                "googleSheetsOAuth2Api": {
+                    "id": "GSHEETS_CREDENTIAL_ID",
+                    "name": "Google Sheets account"
+                }
+            }
+        },
+        {
+            "parameters": {},
+            "type": "n8n-nodes-base.noOp",
+            "typeVersion": 1,
+            "position": [
+                720,
+                440
+            ],
+            "id": "a1b2c3d4-0001-4000-8000-000000000013",
+            "name": "Discard"
+        },
+        {
+            "parameters": {
+                "content": "## 05 – LinkedIn Automation From X Posts\n\n**Pipeline:** Search trending automation tweets → AI repurpose → Approval → LinkedIn publish\n\n### Setup Checklist\n1. Add **X (Twitter)** credentials (OAuth2)\n2. Add **OpenAI API** credentials\n3. Add **Gmail OAuth2** credentials\n4. Add **LinkedIn OAuth2** credentials\n5. Create a **Google Sheet** with columns: `tweet_id`, `author`, `original_tweet_url`, `linkedin_post`, `status`, `posted_at`\n6. Set your LinkedIn person URN in the \"Post to LinkedIn\" node\n7. Replace `YOUR_GOOGLE_SHEET_ID` in the \"Log to Google Sheet\" node",
+                "height": 380,
+                "width": 460,
+                "color": 5
+            },
+            "type": "n8n-nodes-base.stickyNote",
+            "typeVersion": 1,
+            "position": [
+                -1220,
+                -100
+            ],
+            "id": "a1b2c3d4-0001-4000-8000-000000000014",
+            "name": "Sticky Note"
+        }
+    ],
+    "pinData": {},
+    "connections": {
+        "Every Hour": {
+            "main": [
+                [
+                    {
+                        "node": "Search Automation Tweets",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Search Automation Tweets": {
+            "main": [
+                [
+                    {
+                        "node": "Set Tweet Fields",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Set Tweet Fields": {
+            "main": [
+                [
+                    {
+                        "node": "Filter Short Tweets",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Filter Short Tweets": {
+            "main": [
+                [
+                    {
+                        "node": "AI – Repurpose for LinkedIn",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "AI – Repurpose for LinkedIn": {
+            "main": [
+                [
+                    {
+                        "node": "Set LinkedIn Fields",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "OpenAI Chat Model": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "AI – Repurpose for LinkedIn",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Structured Output Parser": {
+            "ai_outputParser": [
+                [
+                    {
+                        "node": "AI – Repurpose for LinkedIn",
+                        "type": "ai_outputParser",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Set LinkedIn Fields": {
+            "main": [
+                [
+                    {
+                        "node": "Send for Approval",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Send for Approval": {
+            "main": [
+                [
+                    {
+                        "node": "Approved?",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Approved?": {
+            "main": [
+                [
+                    {
+                        "node": "Post to LinkedIn",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Discard",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Post to LinkedIn": {
+            "main": [
+                [
+                    {
+                        "node": "Log to Google Sheet",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "active": false,
+    "settings": {
+        "executionOrder": "v1",
+        "availableInMCP": false
+    },
+    "versionId": "05-linkedin-auto-v2",
+    "meta": {
+        "instanceId": "05_linkedin_automation_from_x_posts"
+    },
+    "id": "05_LinkedIn_Automation",
+    "tags": []
+}
