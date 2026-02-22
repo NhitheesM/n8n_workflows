@@ -1,0 +1,507 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/2rJKkhh7vjpX7pvjg/run-sync-get-dataset-items?token=",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"publishedAt\": \"r604800\",\n    \"saveOnlyUniqueItems\": false,\n    \"startUrls\": [\n        {\n            \"url\": \"{{ $json.chatInput }}\"\n        }\n    ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        416,
+        224
+      ],
+      "id": "dded00bd-5247-4d82-bf71-29be7126db7d",
+      "name": "Linkedin Job Scraper"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        800,
+        224
+      ],
+      "id": "b0e950e2-9e11-4b09-92e2-5c20118f8456",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "amount": 25
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        544,
+        464
+      ],
+      "id": "b26a8b63-352e-4509-b935-3f3ed5231711",
+      "name": "Wait",
+      "webhookId": "289d462c-0b5d-4cf1-8177-745099c787df"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        64,
+        224
+      ],
+      "id": "c8de6d2f-6074-45d6-a94d-c871fec44428",
+      "name": "When chat message received",
+      "webhookId": "e0bd1a25-55cc-4f4e-ba93-5dda87ebf3f1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "16tLt62tNfOL-gK6603Nsw2PFw2Nzxtfd-JuK7OPwVRU",
+          "mode": "list",
+          "cachedResultName": "Job_Description_and_it's_Decision_Makers",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16tLt62tNfOL-gK6603Nsw2PFw2Nzxtfd-JuK7OPwVRU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16tLt62tNfOL-gK6603Nsw2PFw2Nzxtfd-JuK7OPwVRU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.name }}",
+            "Title": "={{ $json.jobTitle }}",
+            "Company name": "={{ $json.company }}",
+            "Email": "={{ $json.email }}",
+            "Linkedin_job": "={{ $('Linkedin Job Scraper').item.json.jobUrl }}",
+            "Website": "={{ $('Enrich company Linkfinder AI').item.json.website }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Company name",
+              "displayName": "Company name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Website",
+              "displayName": "Website",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Linkedin_job",
+              "displayName": "Linkedin_job",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "description_job",
+              "displayName": "description_job",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "ignoreTypeMismatchErrors": false,
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        800,
+        464
+      ],
+      "id": "5c0e06d5-8d61-4ca1-94c1-4a2a507b3dcf",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "R2jPkj2gSlXi8lLl",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.linkfinderai.com/api/v1/enrich/linkedin",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer "
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "type",
+              "value": "linkedin_company_to_employees"
+            },
+            {
+              "name": "input_data",
+              "value": "=={{ $json.linkedinUrl.replace(/https:\\/\\/[a-z]{2}\\.linkedin\\.com/, 'https://www.linkedin.com') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1312,
+        208
+      ],
+      "id": "b3e0149e-3408-4003-a3eb-381ceab3b5fe",
+      "name": "FInd decision maker Linkfinder AI"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://api.linkfinderai.com",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer "
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "type",
+              "value": "linkedin_profile_to_linkedin_info"
+            },
+            {
+              "name": "input_data",
+              "value": "={{ $json.linkedinUrl }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1088,
+        480
+      ],
+      "id": "c9b3970d-bcc0-4492-96e6-5c26bb6042d1",
+      "name": "Enrich decision maker Linkfinder AI"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "acf2f71e-7778-428b-bcfe-3539587124e2",
+              "leftValue": "={{ $json.jobTitle }}",
+              "rightValue": "founder",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "f79c9f9c-5df9-45fb-82a0-7b00d34fa657",
+              "leftValue": "={{ $json.jobTitle }}",
+              "rightValue": "recruit",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "ee72a264-a587-4846-b036-8cfb36db715c",
+              "leftValue": "={{ $json.jobTitle }}",
+              "rightValue": "HR",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "7eaa62ff-d12b-4715-899a-da81028d1024",
+              "leftValue": "={{ $json.jobTitle }}",
+              "rightValue": "hr",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "f8b1b705-4583-40be-a4ca-7ab7850d4231",
+              "leftValue": "={{ $json.jobTitle }}",
+              "rightValue": "director",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "f48fef6f-1fef-4262-97aa-aba1405e19a1",
+              "leftValue": "={{ $json.jobTitle }}",
+              "rightValue": "manager",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "c05d9e53-69ce-47f4-b5e2-46d7d27825f0",
+              "leftValue": "={{ $json.jobTitle }}",
+              "rightValue": "ceo",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "bbeb6234-d7ef-4690-9b97-f086a4a3b720",
+              "leftValue": "={{ $json.jobTitle }}",
+              "rightValue": "owner",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "5fccdf01-b821-4160-af47-f58fc7988a4e",
+              "leftValue": "={{ $json.jobTitle }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1328,
+        480
+      ],
+      "id": "33c39860-83f4-4e96-8389-95f67b574383",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://api.linkfinderai.com",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer "
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "type",
+              "value": "linkedin_company_to_linkedin_info"
+            },
+            {
+              "name": "input_data",
+              "value": "={{ $json.companyUrl }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1072,
+        208
+      ],
+      "id": "85896b5e-08de-4ca0-a045-6b251d6d7e35",
+      "name": "Enrich company Linkfinder AI"
+    }
+  ],
+  "connections": {
+    "Linkedin Job Scraper": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Enrich company Linkfinder AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Linkedin Job Scraper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FInd decision maker Linkfinder AI": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrich decision maker Linkfinder AI": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Enrich decision maker Linkfinder AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrich company Linkfinder AI": {
+      "main": [
+        [
+          {
+            "node": "FInd decision maker Linkfinder AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9152717d6a868ded22298fc043191f2973173f9f10a0511281842998517e2b0f"
+  }
+}
